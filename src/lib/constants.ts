@@ -1,8 +1,32 @@
 export const COURSE_STATUS = {
-  COMPLETED: { label: "Completed", color: "emerald", bgClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20", dotClass: "bg-emerald-500" },
-  IN_PROGRESS: { label: "In Progress", color: "blue", bgClass: "bg-blue-500/10 text-blue-500 border-blue-500/20", dotClass: "bg-blue-500" },
-  PLANNED: { label: "Planned", color: "amber", bgClass: "bg-amber-500/10 text-amber-500 border-amber-500/20", dotClass: "bg-amber-500" },
-  NOT_STARTED: { label: "Not Started", color: "slate", bgClass: "bg-slate-500/10 text-slate-400 border-slate-500/20", dotClass: "bg-slate-500" },
+  COMPLETED: {
+    label: "Completed",
+    color: "emerald",
+    bgClass:
+      "bg-emerald-500/15 text-emerald-700 border-emerald-300/70 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40",
+    dotClass: "bg-emerald-500",
+  },
+  IN_PROGRESS: {
+    label: "In Progress",
+    color: "blue",
+    bgClass:
+      "bg-blue-500/15 text-blue-700 border-blue-300/70 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40",
+    dotClass: "bg-blue-500",
+  },
+  PLANNED: {
+    label: "Planned",
+    color: "amber",
+    bgClass:
+      "bg-amber-500/15 text-amber-700 border-amber-300/70 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40",
+    dotClass: "bg-amber-500",
+  },
+  NOT_STARTED: {
+    label: "Not Started",
+    color: "slate",
+    bgClass:
+      "bg-slate-500/12 text-slate-700 border-slate-300/70 dark:bg-slate-500/20 dark:text-slate-300 dark:border-slate-600/60",
+    dotClass: "bg-slate-500",
+  },
 } as const;
 
 export type CourseStatus = keyof typeof COURSE_STATUS;
