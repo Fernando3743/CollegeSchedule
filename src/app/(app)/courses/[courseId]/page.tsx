@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCourseById } from "@/actions/course-actions";
+import { getCourseById } from "@/lib/queries";
 import { CourseDetail } from "@/components/courses/course-detail";
 
 export default async function CourseDetailPage({

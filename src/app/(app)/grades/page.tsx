@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { getCoursesWithGrades } from "@/lib/queries";
 import { SEMESTER_COLORS } from "@/lib/constants";
 import { calculateWeightedAverage, calculateGPA, getGradeColor, isPassing } from "@/lib/grade-utils";
 import { GpaBarChart } from "@/components/grades/gpa-bar-chart";
@@ -6,10 +6,7 @@ import { GradesTable } from "@/components/grades/grades-table";
 import { SemesterAccordion } from "@/components/grades/semester-accordion";
 
 export default async function GradesPage() {
-  const courses = await prisma.course.findMany({
-    include: { grades: true },
-    orderBy: [{ semester: "asc" }, { name: "asc" }],
-  });
+  const courses = await getCoursesWithGrades();
 
   // Calculate per-course averages
   const courseAverages = courses.map((course) => {

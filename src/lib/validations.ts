@@ -28,7 +28,7 @@ export const updateGradeSchema = z.object({
 export const addNoteSchema = z.object({
   courseId: z.string().min(1),
   title: z.string().min(1).max(500),
-  content: z.string().max(10000),
+  content: z.string().min(1).max(10000),
 });
 
 export const updateNoteSchema = z.object({

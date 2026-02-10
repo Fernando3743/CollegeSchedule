@@ -1,13 +1,11 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { getAllCoursesBasic, getSettings } from "@/lib/queries";
 import { COURSE_STATUS, SEMESTER_COLORS, type CourseStatus } from "@/lib/constants";
 
 export default async function SemestersPage() {
   const [courses, settings] = await Promise.all([
-    prisma.course.findMany({
-      orderBy: [{ semester: "asc" }, { momento: "asc" }, { name: "asc" }],
-    }),
-    prisma.settings.findUnique({ where: { id: "singleton" } }),
+    getAllCoursesBasic(),
+    getSettings(),
   ]);
 
   const currentSemester = settings?.currentSemester ?? 1;

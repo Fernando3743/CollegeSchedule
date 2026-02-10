@@ -26,6 +26,7 @@ export function NotesList({
   };
 
   const handleDeleteNote = (noteId: string) => {
+    if (!confirm("Are you sure you want to delete this note?")) return;
     startTransition(async () => {
       await deleteNote(noteId);
     });

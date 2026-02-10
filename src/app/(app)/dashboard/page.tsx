@@ -1,4 +1,4 @@
-import { getAllCourses, getSettings } from "@/actions/course-actions";
+import { getAllCourses, getSettings } from "@/lib/queries";
 import { calculateWeightedAverage, calculateGPA } from "@/lib/grade-utils";
 import { parseTime, formatTime, getNextClassDate } from "@/lib/schedule-utils";
 import { DAY_LABELS } from "@/lib/constants";

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { getCoursesWithGrades } from "@/lib/queries";
 import { SEMESTER_COLORS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/status-badge";
 
@@ -16,11 +16,7 @@ export default async function SemesterDetailPage({
     notFound();
   }
 
-  const courses = await prisma.course.findMany({
-    where: { semester: semNum },
-    include: { grades: true },
-    orderBy: [{ momento: "asc" }, { name: "asc" }],
-  });
+  const courses = await getCoursesWithGrades(semNum);
 
   if (courses.length === 0) {
     notFound();

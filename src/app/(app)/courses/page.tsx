@@ -1,4 +1,4 @@
-import { getAllCourses, getSettings } from "@/actions/course-actions";
+import { getAllCourses, getSettings } from "@/lib/queries";
 import { CoursesGrid } from "@/components/courses/courses-grid";
 import { Badge } from "@/components/ui/badge";
 

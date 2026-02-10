@@ -1,5 +1,3 @@
-"use client";
-
 interface GpaBarChartProps {
   data: { semester: number; gpa: number }[];
   colors: string[];

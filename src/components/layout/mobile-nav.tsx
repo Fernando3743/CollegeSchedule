@@ -3,21 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Calendar,
-  BookOpen,
-  GraduationCap,
-  BarChart3,
-} from "lucide-react";
-
-const navItems = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/schedule", label: "Schedule", icon: Calendar },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/semesters", label: "Semesters", icon: GraduationCap },
-  { href: "/grades", label: "Grades", icon: BarChart3 },
-];
+import { navItems } from "@/lib/nav-items";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -39,7 +25,7 @@ export function MobileNav() {
               )}
             >
               <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
+              <span>{item.mobileLabel}</span>
             </Link>
           );
         })}

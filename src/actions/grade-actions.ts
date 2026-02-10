@@ -14,6 +14,7 @@ export async function addGrade(courseId: string, label: string, value: number, w
     data: parsed.data,
   });
   revalidatePath(`/courses/${parsed.data.courseId}`);
+  revalidatePath("/courses");
   revalidatePath("/grades");
   revalidatePath("/dashboard");
 }
@@ -29,20 +30,20 @@ export async function updateGrade(gradeId: string, data: { label?: string; value
     data: parsed.data.data,
   });
   revalidatePath(`/courses/${grade.courseId}`);
+  revalidatePath("/courses");
   revalidatePath("/grades");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteGrade(gradeId: string) {
   if (!gradeId) throw new Error("Grade ID is required");
 
-  const grade = await prisma.grade.delete({ where: { id: gradeId } });
-  revalidatePath(`/courses/${grade.courseId}`);
-  revalidatePath("/grades");
-}
+  const grade = await prisma.grade.findUnique({ where: { id: gradeId } });
+  if (!grade) throw new Error("Grade not found");
 
-export async function getAllGrades() {
-  return prisma.grade.findMany({
-    include: { course: true },
-    orderBy: { createdAt: "desc" },
-  });
+  await prisma.grade.delete({ where: { id: gradeId } });
+  revalidatePath(`/courses/${grade.courseId}`);
+  revalidatePath("/courses");
+  revalidatePath("/grades");
+  revalidatePath("/dashboard");
 }

@@ -1,5 +1,3 @@
-"use client";
-
 import { COURSE_STATUS, type CourseStatus } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 

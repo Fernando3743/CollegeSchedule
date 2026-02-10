@@ -3,25 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { navItems } from "@/lib/nav-items";
 import {
-  LayoutDashboard,
-  Calendar,
-  BookOpen,
   GraduationCap,
-  BarChart3,
   Moon,
   Sun,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/schedule", label: "Schedule", icon: Calendar },
-  { href: "/courses", label: "Courses", icon: BookOpen },
-  { href: "/semesters", label: "Semesters", icon: GraduationCap },
-  { href: "/grades", label: "Grades", icon: BarChart3 },
-];
 
 export function Sidebar() {
   const pathname = usePathname();

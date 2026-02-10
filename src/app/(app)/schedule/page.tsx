@@ -1,14 +1,11 @@
-import { prisma } from "@/lib/db";
+import { getSettings, getScheduleCourses } from "@/lib/queries";
 import { WeekGrid } from "@/components/schedule/week-grid";
 
 export default async function SchedulePage() {
-  const settings = await prisma.settings.findFirst();
+  const settings = await getSettings();
   const currentSemester = settings?.currentSemester ?? 1;
 
-  const courses = await prisma.course.findMany({
-    where: { semester: currentSemester },
-    orderBy: { code: "asc" },
-  });
+  const courses = await getScheduleCourses(currentSemester);
 
   const serialized = courses.map((c) => ({
     id: c.id,

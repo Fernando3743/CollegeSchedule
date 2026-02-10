@@ -22,6 +22,7 @@ export const DAY_ORDER: Record<string, number> = {
 };
 
 export const DAY_LABELS: Record<string, string> = {
+  domingo: "Sunday",
   lunes: "Monday",
   martes: "Tuesday",
   miercoles: "Wednesday",

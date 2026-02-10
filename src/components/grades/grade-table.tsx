@@ -47,6 +47,7 @@ export function GradeTable({
   };
 
   const handleDeleteGrade = (gradeId: string) => {
+    if (!confirm("Are you sure you want to delete this grade?")) return;
     startTransition(async () => {
       await deleteGrade(gradeId);
     });
