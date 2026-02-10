@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Course {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  name           String
+  semester       Int
+  credits        Int      @default(3)
+  status         String   @default("NOT_STARTED")
+  professor      String?
+  professorEmail String?
+  day            String?
+  time           String?
+  group          String?
+  momento        String?
+  momentoDates   String?
+  teamsLink      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  grades         Grade[]
+  notes          Note[]
+
+  @@index([semester])
+  @@index([status])
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  courseId   String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  label     String
+  value     Float
+  weight    Float    @default(0)
+  momento   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  courseId   String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([createdAt])
+}
+
+model Settings {
+  id              String   @id @default("singleton")
+  currentSemester Int      @default(1)
+  currentMomento  String   @default("I")
+  studentName     String   @default("Student")
+  updatedAt       DateTime @updatedAt
+}
