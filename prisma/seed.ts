@@ -1,7 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import coursesData from "../data/courses.json";
 
-const prisma = new PrismaClient();
+const prisma = process.env.TURSO_DATABASE_URL
+  ? new PrismaClient({
+      adapter: new PrismaLibSQL({
+        url: process.env.TURSO_DATABASE_URL,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+      }),
+    })
+  : new PrismaClient();
 
 async function main() {
   console.log("Seeding database...");
