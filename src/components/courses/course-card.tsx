@@ -93,7 +93,7 @@ export function CourseCard({ course, isExpanded, onToggle }: CourseCardProps) {
 
   return (
     <Card
-      className={`border-l-4 ${borderColor} py-0 gap-0 hover:shadow-md transition-shadow cursor-pointer ${isPending ? "opacity-70" : ""}`}
+      className={`self-start border-l-4 ${borderColor} py-0 gap-0 hover:shadow-md transition-shadow cursor-pointer ${isPending ? "opacity-70" : ""}`}
       onClick={onToggle}
     >
       {/* Compact State */}

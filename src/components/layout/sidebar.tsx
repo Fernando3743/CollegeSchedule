@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { navItems } from "@/lib/nav-items";
 import {
   GraduationCap,
+  LogOut,
   Moon,
   Sun,
 } from "lucide-react";
@@ -62,6 +63,13 @@ export function Sidebar() {
           <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span>Toggle Theme</span>
         </Button>
+        <Link
+          href="/logout"
+          className="mt-2 flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Logout</span>
+        </Link>
       </div>
     </aside>
   );

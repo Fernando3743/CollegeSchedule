@@ -1,7 +1,10 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { requireAuthenticatedPage } from "@/lib/auth";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  await requireAuthenticatedPage();
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />

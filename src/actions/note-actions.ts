@@ -3,8 +3,11 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { addNoteSchema, updateNoteSchema } from "@/lib/validations";
+import { assertAuthenticated } from "@/lib/auth";
 
 export async function addNote(courseId: string, title: string, content: string) {
+  await assertAuthenticated();
+
   const parsed = addNoteSchema.safeParse({ courseId, title, content });
   if (!parsed.success) {
     throw new Error(`Invalid input: ${parsed.error.message}`);
@@ -19,6 +22,8 @@ export async function addNote(courseId: string, title: string, content: string) 
 }
 
 export async function updateNote(noteId: string, data: { title?: string; content?: string; pinned?: boolean }) {
+  await assertAuthenticated();
+
   const parsed = updateNoteSchema.safeParse({ noteId, data });
   if (!parsed.success) {
     throw new Error(`Invalid input: ${parsed.error.message}`);
@@ -32,6 +37,8 @@ export async function updateNote(noteId: string, data: { title?: string; content
 }
 
 export async function deleteNote(noteId: string) {
+  await assertAuthenticated();
+
   if (!noteId) throw new Error("Note ID is required");
 
   const note = await prisma.note.findUnique({ where: { id: noteId } });
@@ -44,6 +51,8 @@ export async function deleteNote(noteId: string) {
 }
 
 export async function toggleNotePin(noteId: string) {
+  await assertAuthenticated();
+
   if (!noteId) throw new Error("Note ID is required");
 
   const updatedNote = await prisma.$transaction(async (tx) => {

@@ -3,8 +3,11 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { addGradeSchema, updateGradeSchema } from "@/lib/validations";
+import { assertAuthenticated } from "@/lib/auth";
 
 export async function addGrade(courseId: string, label: string, value: number, weight: number, momento?: string) {
+  await assertAuthenticated();
+
   const parsed = addGradeSchema.safeParse({ courseId, label, value, weight, momento });
   if (!parsed.success) {
     throw new Error(`Invalid input: ${parsed.error.message}`);
@@ -20,6 +23,8 @@ export async function addGrade(courseId: string, label: string, value: number, w
 }
 
 export async function updateGrade(gradeId: string, data: { label?: string; value?: number; weight?: number; momento?: string }) {
+  await assertAuthenticated();
+
   const parsed = updateGradeSchema.safeParse({ gradeId, data });
   if (!parsed.success) {
     throw new Error(`Invalid input: ${parsed.error.message}`);
@@ -36,6 +41,8 @@ export async function updateGrade(gradeId: string, data: { label?: string; value
 }
 
 export async function deleteGrade(gradeId: string) {
+  await assertAuthenticated();
+
   if (!gradeId) throw new Error("Grade ID is required");
 
   const grade = await prisma.grade.findUnique({ where: { id: gradeId } });
