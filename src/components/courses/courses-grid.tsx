@@ -62,6 +62,24 @@ export function CoursesGrid({
     });
   };
 
+  const allVisibleCardsExpanded =
+    sortedCourses.length > 0 &&
+    sortedCourses.every((course) => expandedCards.has(course.id));
+
+  const handleToggleAllVisibleCards = () => {
+    setExpandedCards((prev) => {
+      const next = new Set(prev);
+
+      if (allVisibleCardsExpanded) {
+        sortedCourses.forEach((course) => next.delete(course.id));
+      } else {
+        sortedCourses.forEach((course) => next.add(course.id));
+      }
+
+      return next;
+    });
+  };
+
   const currentSemesterIndex = selectedSemester
     ? semesters.indexOf(selectedSemester)
     : -1;
@@ -118,9 +136,21 @@ export function CoursesGrid({
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <span className="text-sm text-muted-foreground">
-            {sortedCourses.length} course{sortedCourses.length !== 1 ? "s" : ""}
-          </span>
+          <div className="flex items-center gap-3">
+            {sortedCourses.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden md:inline-flex"
+                onClick={handleToggleAllVisibleCards}
+              >
+                {allVisibleCardsExpanded ? "Close all cards" : "Open all cards"}
+              </Button>
+            )}
+            <span className="text-sm text-muted-foreground">
+              {sortedCourses.length} course{sortedCourses.length !== 1 ? "s" : ""}
+            </span>
+          </div>
         </div>
       )}
 

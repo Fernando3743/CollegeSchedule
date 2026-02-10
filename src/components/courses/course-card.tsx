@@ -91,14 +91,12 @@ export function CourseCard({ course, isExpanded, onToggle }: CourseCardProps) {
   );
 
   const handleCardClick = () => {
-    if (window.matchMedia("(max-width: 767px)").matches) {
-      onToggle();
-    }
+    onToggle();
   };
 
   return (
     <Card
-      className={`self-start border-l-4 ${borderColor} py-0 gap-0 hover:shadow-md transition-shadow cursor-pointer md:cursor-default ${isPending ? "opacity-70" : ""}`}
+      className={`self-start border-l-4 ${borderColor} py-0 gap-0 hover:shadow-md transition-shadow cursor-pointer ${isPending ? "opacity-70" : ""}`}
       onClick={handleCardClick}
     >
       {/* Compact State */}
@@ -156,7 +154,7 @@ export function CourseCard({ course, isExpanded, onToggle }: CourseCardProps) {
 
       {/* Expanded State */}
       <div
-        className={`grid transition-[grid-template-rows] duration-300 ease-in-out md:[grid-template-rows:1fr] ${isExpanded ? "[grid-template-rows:1fr]" : "[grid-template-rows:0fr]"}`}
+        className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isExpanded ? "[grid-template-rows:1fr]" : "[grid-template-rows:0fr]"}`}
       >
         <div className="overflow-hidden">
           <div className="px-4 pb-4 md:px-5 md:pb-5 space-y-3">
