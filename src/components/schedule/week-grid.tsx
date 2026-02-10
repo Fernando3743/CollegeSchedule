@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { parseTime, formatTime, normalizeDay, getNextClassDate } from "@/lib/schedule-utils";
+import {
+  parseTimeRange,
+  formatTime,
+  formatTimeRange,
+  normalizeDay,
+  getNextClassDate,
+} from "@/lib/schedule-utils";
 import { DAY_ORDER, DAY_LABELS, SEMESTER_COLORS } from "@/lib/constants";
 import { Video, Clock, User, Calendar, BookOpen } from "lucide-react";
 
@@ -36,17 +42,21 @@ const DAY_SHORT: Record<string, string> = {
   sabado: "Sat",
 };
 
-const TIME_SLOTS = [
-  { hour: 6, label: "6 AM" },
-  { hour: 7, label: "7 AM" },
-  { hour: 8, label: "8 AM" },
-  { hour: 9, label: "9 AM" },
-  { hour: 18, label: "6 PM" },
-  { hour: 19, label: "7 PM" },
-  { hour: 20, label: "8 PM" },
-  { hour: 21, label: "9 PM" },
-  { hour: 22, label: "10 PM" },
-];
+function formatClockTime(hours: number, minutes: number): string {
+  const h = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+  return `${h}:${minutes.toString().padStart(2, "0")}`;
+}
+
+function formatCompactRange(start: { hours: number; minutes: number }, end: { hours: number; minutes: number }) {
+  const startPeriod = start.hours >= 12 ? "PM" : "AM";
+  const endPeriod = end.hours >= 12 ? "PM" : "AM";
+
+  if (startPeriod === endPeriod) {
+    return `${formatClockTime(start.hours, start.minutes)} - ${formatClockTime(end.hours, end.minutes)} ${endPeriod}`;
+  }
+
+  return `${formatClockTime(start.hours, start.minutes)} ${startPeriod} - ${formatClockTime(end.hours, end.minutes)} ${endPeriod}`;
+}
 
 function getColorForCourse(index: number) {
   return SEMESTER_COLORS[index % SEMESTER_COLORS.length];
@@ -166,9 +176,11 @@ function MobileSchedule({
                 const colorIndex = courseIndexMap.get(course.id) ?? 0;
                 const gradient = getColorForCourse(colorIndex);
                 const shadow = getShadowForCourse(colorIndex);
-                const time = course.time ? parseTime(course.time) : null;
-                const timeLabel = time
-                  ? formatTime(time.hours, time.minutes)
+                const timeRange = course.time
+                  ? parseTimeRange(course.time)
+                  : null;
+                const timeLabel = timeRange
+                  ? formatTimeRange(timeRange.start, timeRange.end)
                   : "";
 
                 return (
@@ -232,55 +244,143 @@ function DesktopSchedule({
   courses: ScheduleCourse[];
   courseIndexMap: Map<string, number>;
 }) {
-  const courseTimes = courses
-    .filter((c) => c.time)
-    .map((c) => parseTime(c.time!));
+  const MINUTE_HEIGHT_PX = 80 / 60;
+  const COMPRESSED_GAP_PX = 26;
+  const MERGE_GAP_MINUTES = 60;
+  const MIN_GRID_HEIGHT_PX = 280;
+  const TOP_PADDING_PX = 20;
+  const BOTTOM_PADDING_PX = 48;
 
-  const hasEveningClasses = courseTimes.some((t) => t.hours >= 17);
-  const hasMorningClasses = courseTimes.some((t) => t.hours < 17);
+  const positionedCourses = courses
+    .filter(
+      (course): course is ScheduleCourse & { day: string; time: string } =>
+        Boolean(course.day && course.time)
+    )
+    .map((course) => {
+      const dayIdx = SCHEDULE_DAYS.indexOf(normalizeDay(course.day));
+      const parsedRange = parseTimeRange(course.time);
+      const startMinutes =
+        parsedRange.start.hours * 60 + parsedRange.start.minutes;
+      let endMinutes = parsedRange.end.hours * 60 + parsedRange.end.minutes;
 
-  const relevantSlots = TIME_SLOTS.filter((slot) => {
-    if (hasMorningClasses && hasEveningClasses) return true;
-    if (hasMorningClasses) return slot.hour < 17;
-    return slot.hour >= 17;
-  });
-
-  const slots =
-    relevantSlots.length > 0
-      ? relevantSlots
-      : TIME_SLOTS.filter((s) => s.hour >= 17);
-
-  const minHour = slots[0].hour;
-  const maxHour = slots[slots.length - 1].hour + 1;
-  const totalMinutes = (maxHour - minHour) * 60;
-
-  const coursePositions = courses
-    .filter((c) => c.day && c.time)
-    .map((c) => {
-      const normalized = normalizeDay(c.day!);
-      const dayIdx = SCHEDULE_DAYS.indexOf(normalized);
-      const time = parseTime(c.time!);
-      const topMinutes = (time.hours - minHour) * 60 + time.minutes;
-      const topPercent = (topMinutes / totalMinutes) * 100;
-      const heightPercent = (90 / totalMinutes) * 100;
+      while (endMinutes <= startMinutes) {
+        endMinutes += 12 * 60;
+      }
 
       return {
-        course: c,
+        course,
         dayIdx,
-        topPercent: Math.max(0, topPercent),
-        heightPercent: Math.min(
-          heightPercent,
-          100 - Math.max(0, topPercent)
-        ),
+        startMinutes,
+        endMinutes,
+        timeLabel: formatCompactRange(parsedRange.start, parsedRange.end),
       };
     })
-    .filter((p) => p.dayIdx >= 0);
+    .filter((entry) => entry.dayIdx >= 0);
 
   const today = getTodayDayName();
 
-  if (courses.length === 0) {
+  if (courses.length === 0 || positionedCourses.length === 0) {
     return <EmptyState />;
   }
+
+  const rawIntervals = positionedCourses
+    .map((entry) => ({
+      start: Math.floor(entry.startMinutes / 60) * 60,
+      end: Math.ceil(entry.endMinutes / 60) * 60,
+    }))
+    .sort((a, b) => a.start - b.start);
+
+  const mergedSegments: Array<{ start: number; end: number }> = [];
+
+  for (const interval of rawIntervals) {
+    const last = mergedSegments[mergedSegments.length - 1];
+    if (!last) {
+      mergedSegments.push({ ...interval });
+      continue;
+    }
+
+    if (interval.start - last.end <= MERGE_GAP_MINUTES) {
+      last.end = Math.max(last.end, interval.end);
+      continue;
+    }
+
+    mergedSegments.push({ ...interval });
+  }
+
+  const layoutSegments: Array<{
+    start: number;
+    end: number;
+    offset: number;
+    height: number;
+  }> = [];
+  let runningOffset = 0;
+
+  for (const [index, segment] of mergedSegments.entries()) {
+    const height = (segment.end - segment.start) * MINUTE_HEIGHT_PX;
+    layoutSegments.push({
+      ...segment,
+      offset: runningOffset,
+      height,
+    });
+    runningOffset += height;
+    if (index < mergedSegments.length - 1) {
+      runningOffset += COMPRESSED_GAP_PX;
+    }
+  }
+
+  const contentHeight = runningOffset;
+  const requiredPadding = TOP_PADDING_PX + BOTTOM_PADDING_PX;
+  const gridHeight = Math.max(MIN_GRID_HEIGHT_PX, contentHeight + requiredPadding);
+  const extraVertical = gridHeight - contentHeight - requiredPadding;
+  const topOffset = TOP_PADDING_PX + extraVertical / 2;
+
+  const minuteToPx = (minute: number) => {
+    for (const segment of layoutSegments) {
+      if (minute < segment.start) {
+        return topOffset + segment.offset;
+      }
+      if (minute <= segment.end) {
+        return (
+          topOffset +
+          segment.offset +
+          (minute - segment.start) * MINUTE_HEIGHT_PX
+        );
+      }
+    }
+
+    const lastSegment = layoutSegments[layoutSegments.length - 1];
+    return topOffset + lastSegment.offset + lastSegment.height;
+  };
+
+  const hourMarkers = layoutSegments.flatMap((segment, segmentIndex) => {
+    const markers: Array<{
+      key: string;
+      topPx: number;
+      label: string;
+    }> = [];
+
+    for (let minute = segment.start; minute <= segment.end; minute += 60) {
+      const hour = Math.floor(minute / 60) % 24;
+      markers.push({
+        key: `${segmentIndex}-${minute}`,
+        topPx: minuteToPx(minute),
+        label: formatTime(hour, 0).replace(":00", ""),
+      });
+    }
+
+    return markers;
+  });
+
+  const positionedWithPixels = positionedCourses.map((entry) => {
+    const topPx = minuteToPx(entry.startMinutes);
+    const bottomPx = minuteToPx(entry.endMinutes);
+
+    return {
+      ...entry,
+      topPx,
+      heightPx: Math.max(68, bottomPx - topPx),
+    };
+  });
 
   return (
     <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
@@ -322,23 +422,19 @@ function DesktopSchedule({
       {/* Body */}
       <div
         className="grid grid-cols-[72px_repeat(6,1fr)]"
-        style={{ minHeight: `${slots.length * 80}px` }}
+        style={{ height: `${gridHeight}px` }}
       >
         {/* Time gutter */}
         <div className="relative border-r bg-muted/20">
-          {slots.map((slot) => {
-            const topPercent =
-              ((slot.hour - minHour) * 60 / totalMinutes) * 100;
-            return (
-              <div
-                key={slot.hour}
-                className="absolute w-full text-[11px] font-medium text-muted-foreground text-right pr-3 -translate-y-1/2"
-                style={{ top: `${topPercent}%` }}
-              >
-                {slot.label}
-              </div>
-            );
-          })}
+          {hourMarkers.map((marker) => (
+            <div
+              key={marker.key}
+              className="absolute w-full text-[11px] font-medium text-muted-foreground text-right pr-3 -translate-y-1/2"
+              style={{ top: `${marker.topPx}px` }}
+            >
+              {marker.label}
+            </div>
+          ))}
         </div>
 
         {/* Day columns */}
@@ -350,44 +446,33 @@ function DesktopSchedule({
               className={`relative border-l transition-colors ${
                 isToday ? "bg-primary/[0.02]" : ""
               }`}
-              style={{ minHeight: `${slots.length * 80}px` }}
+              style={{ height: `${gridHeight}px` }}
             >
               {/* Hour grid lines */}
-              {slots.map((slot) => {
-                const topPercent =
-                  ((slot.hour - minHour) * 60 / totalMinutes) * 100;
-                return (
-                  <div
-                    key={slot.hour}
-                    className="absolute w-full border-t border-dashed border-border/40"
-                    style={{ top: `${topPercent}%` }}
-                  />
-                );
-              })}
+              {hourMarkers.map((marker) => (
+                <div
+                  key={marker.key}
+                  className="absolute w-full border-t border-dashed border-border/40"
+                  style={{ top: `${marker.topPx}px` }}
+                />
+              ))}
 
               {/* Course blocks */}
-              {coursePositions
-                .filter((p) => p.dayIdx === dayIdx)
-                .map((pos) => {
+              {positionedWithPixels
+                .filter((entry) => entry.dayIdx === dayIdx)
+                .map((entry) => {
                   const colorIndex =
-                    courseIndexMap.get(pos.course.id) ?? 0;
+                    courseIndexMap.get(entry.course.id) ?? 0;
                   const gradient = getColorForCourse(colorIndex);
                   const shadow = getShadowForCourse(colorIndex);
-                  const time = pos.course.time
-                    ? parseTime(pos.course.time)
-                    : null;
-                  const timeLabel = time
-                    ? formatTime(time.hours, time.minutes)
-                    : "";
 
                   return (
                     <div
-                      key={pos.course.id}
+                      key={entry.course.id}
                       className="absolute inset-x-1.5 z-10 group"
                       style={{
-                        top: `${pos.topPercent}%`,
-                        height: `${pos.heightPercent}%`,
-                        minHeight: "68px",
+                        top: `${entry.topPx}px`,
+                        height: `${entry.heightPx}px`,
                       }}
                     >
                       <div
@@ -395,23 +480,23 @@ function DesktopSchedule({
                       >
                         <div>
                           <p className="text-[11px] font-bold leading-tight line-clamp-2">
-                            {pos.course.name}
+                            {entry.course.name}
                           </p>
-                          {pos.course.professor && (
+                          {entry.course.professor && (
                             <p className="text-[9px] text-white/70 mt-0.5 line-clamp-1 flex items-center gap-0.5">
                               <User className="size-2.5 shrink-0" />
-                              {pos.course.professor}
+                              {entry.course.professor}
                             </p>
                           )}
                         </div>
                         <div className="flex items-center justify-between mt-auto">
-                          <span className="text-[9px] font-medium text-white/70 flex items-center gap-0.5">
+                          <span className="text-[9px] font-medium text-white/70 flex items-center gap-0.5 whitespace-nowrap">
                             <Clock className="size-2.5" />
-                            {timeLabel}
+                            {entry.timeLabel}
                           </span>
-                          {pos.course.teamsLink && (
+                          {entry.course.teamsLink && (
                             <a
-                              href={pos.course.teamsLink}
+                              href={entry.course.teamsLink}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-0.5 rounded-lg bg-white/20 px-1.5 py-0.5 text-[9px] font-semibold hover:bg-white/30 transition-colors"
