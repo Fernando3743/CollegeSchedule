@@ -10,7 +10,7 @@ export interface ParsedTimeRange {
 }
 
 const DEFAULT_START_TIME: ParsedTime = { hours: 18, minutes: 30 };
-const DEFAULT_DURATION_MINUTES = 90;
+const DEFAULT_DURATION_MINUTES = 120;
 const TIME_ENTRY_REGEX = /(\d{1,2})(?::(\d{2}))?\s*(a\.?\s*m\.?|p\.?\s*m\.?)?/gi;
 
 type TimePeriod = "am" | "pm" | null;

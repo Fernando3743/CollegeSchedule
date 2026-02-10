@@ -36,6 +36,7 @@ import {
   getGradeColor,
   isPassing,
 } from "@/lib/grade-utils";
+import { formatTime, parseTimeRange } from "@/lib/schedule-utils";
 import type { Course, Grade } from "@prisma/client";
 
 const SEMESTER_BORDER_COLORS = [
@@ -82,6 +83,7 @@ export function CourseCard({ course, isExpanded, onToggle }: CourseCardProps) {
   const dayLabel = course.day
     ? DAY_LABELS[course.day.toLowerCase()] || course.day
     : null;
+  const parsedTimeRange = course.time ? parseTimeRange(course.time) : null;
   const statusConfig =
     COURSE_STATUS[course.status as CourseStatus] || COURSE_STATUS.NOT_STARTED;
 
@@ -209,8 +211,10 @@ export function CourseCard({ course, isExpanded, onToggle }: CourseCardProps) {
                   <Calendar className="h-3 w-3 shrink-0" />
                   <span>
                     {dayLabel}
-                    {dayLabel && course.time ? " " : ""}
-                    {course.time}
+                    {dayLabel && parsedTimeRange ? " " : ""}
+                    {parsedTimeRange
+                      ? `Start ${formatTime(parsedTimeRange.start.hours, parsedTimeRange.start.minutes)} | End ${formatTime(parsedTimeRange.end.hours, parsedTimeRange.end.minutes)}`
+                      : course.time}
                   </span>
                 </div>
               )}
