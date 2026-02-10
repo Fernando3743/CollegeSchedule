@@ -160,7 +160,7 @@ export function DashboardCourses({
           <p className="text-sm">No courses match your search</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
           {sortedCourses.map((course) => (
             <CourseCard
               key={course.id}

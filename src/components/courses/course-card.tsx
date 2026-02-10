@@ -3,7 +3,6 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import {
-  ChevronDown,
   Clock,
   User,
   Mail,
@@ -91,63 +90,52 @@ export function CourseCard({ course, isExpanded, onToggle }: CourseCardProps) {
     course.grades.map((g) => ({ value: g.value, weight: g.weight }))
   );
 
+  const handleCardClick = () => {
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      onToggle();
+    }
+  };
+
   return (
     <Card
-      className={`self-start border-l-4 ${borderColor} py-0 gap-0 hover:shadow-md transition-shadow cursor-pointer ${isPending ? "opacity-70" : ""}`}
-      onClick={onToggle}
+      className={`self-start border-l-4 ${borderColor} py-0 gap-0 hover:shadow-md transition-shadow cursor-pointer md:cursor-default ${isPending ? "opacity-70" : ""}`}
+      onClick={handleCardClick}
     >
       {/* Compact State */}
-      <div className="px-4 py-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <span
-              className={`w-2 h-2 rounded-full shrink-0 ${statusConfig.dotClass}`}
-            />
-            <span className="font-mono text-xs text-muted-foreground truncate">
-              {course.code}
-            </span>
+      <div className="px-4 py-3 md:px-5 md:py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span
+                className={`w-2 h-2 rounded-full shrink-0 ${statusConfig.dotClass}`}
+              />
+              <span className="font-mono text-xs text-muted-foreground truncate">
+                {course.code}
+              </span>
+            </div>
+            <h3 className="font-semibold text-sm md:text-base mt-1 line-clamp-2">
+              {course.name}
+            </h3>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              Sem {course.semester}
-            </span>
-            <ChevronDown
-              className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-            />
-          </div>
-        </div>
-        <h3 className="font-semibold text-sm mt-1 line-clamp-1">
-          {course.name}
-        </h3>
-      </div>
 
-      {/* Expanded State */}
-      <div
-        className="grid transition-[grid-template-rows] duration-300 ease-in-out"
-        style={{ gridTemplateRows: isExpanded ? "1fr" : "0fr" }}
-      >
-        <div className="overflow-hidden">
-          <div className="px-4 pb-4 space-y-3">
-            <Separator />
-
-            {/* Actions Row */}
-            <div
-              className="flex items-center gap-2 flex-wrap"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <div
+            className="flex flex-col items-end gap-1 shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-1">
               <Select
                 value={course.status}
                 onValueChange={(value) =>
                   handleStatusChange(value as CourseStatus)
                 }
               >
-                <SelectTrigger size="sm" className="h-7 w-auto gap-1.5 text-xs">
+                <SelectTrigger size="sm" className="h-7 md:h-8 w-auto gap-1.5 text-xs">
                   <span
                     className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusConfig.dotClass}`}
                   />
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent align="start">
+                <SelectContent align="end">
                   {STATUS_OPTIONS.map((status) => (
                     <SelectItem key={status} value={status}>
                       <span
@@ -158,7 +146,27 @@ export function CourseCard({ course, isExpanded, onToggle }: CourseCardProps) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              Sem {course.semester}
+            </span>
+          </div>
+        </div>
+      </div>
 
+      {/* Expanded State */}
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ease-in-out md:[grid-template-rows:1fr] ${isExpanded ? "[grid-template-rows:1fr]" : "[grid-template-rows:0fr]"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="px-4 pb-4 md:px-5 md:pb-5 space-y-3">
+            <Separator />
+
+            {/* Actions Row */}
+            <div
+              className="flex items-center gap-2 flex-wrap"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Link href={`/courses/${course.id}`}>
                 <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
                   <ExternalLink className="h-3 w-3" />

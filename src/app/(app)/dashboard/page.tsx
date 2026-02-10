@@ -33,10 +33,9 @@ export default async function DashboardPage() {
   }));
   const gpa = calculateGPA(courseGrades);
 
-  // Upcoming classes - current semester, momento I, IN_PROGRESS
+  // Upcoming classes - all enrolled courses, current momento, IN_PROGRESS
   const upcomingClasses = courses.filter(
     (c) =>
-      c.semester === currentSemester &&
       c.momento === (settings?.currentMomento ?? "I") &&
       c.status === "IN_PROGRESS" &&
       c.day &&
