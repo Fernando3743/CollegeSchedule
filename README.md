@@ -1,56 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# College Schedule
+
+A private student dashboard to track courses, schedule, semester progress, grades, and notes.
+
+## Features
+
+- Dashboard with degree completion, current semester progress, upcoming classes, and GPA.
+- Course catalog with filters and course detail pages.
+- Course detail tabs for overview, grade management, and note management.
+- Semester roadmap with progress by semester and semester detail pages grouped by `Momento`.
+- Grades analytics with overall GPA, passing rate, GPA by semester, and grade tables.
+- Weekly schedule view for the active semester.
+- Password-protected access for private deployments.
+
+## Tech Stack
+
+- Next.js (App Router) + React + TypeScript
+- Prisma ORM + SQLite (default) or Turso/libSQL (optional)
+- Tailwind CSS v4 + shadcn/ui
+- Server Actions for mutations
 
 ## Getting Started
 
-First, run the development server:
+### 1) Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2) Configure environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create/update `.env`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+DATABASE_URL="file:./dev.db"
 
-## Learn More
+# Recommended for private/prod deployment
+APP_PASSWORD="change-me"
+APP_SESSION_SECRET="replace-with-a-long-random-secret"
 
-To learn more about Next.js, take a look at the following resources:
+# Optional (use Turso/libSQL instead of local SQLite)
+# TURSO_DATABASE_URL="libsql://..."
+# TURSO_AUTH_TOKEN="..."
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3) Create database and apply migrations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm prisma migrate dev
+```
 
-## Deploy on Vercel
+### 4) Seed initial courses/settings
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm tsx prisma/seed.ts
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 5) Run the app
 
-## Private Deployment (Recommended for this app)
+```bash
+pnpm dev
+```
 
-This app includes a simple password gate for private deployments.
+Open `http://localhost:3000`.
 
-Set these environment variables in Vercel:
+## Available Commands
 
-- `APP_PASSWORD`: password used on `/login`
-- `APP_SESSION_SECRET`: long random string used to sign the session cookie
-- `DATABASE_URL`: production database connection string
+- `pnpm dev` - Start local development server
+- `pnpm build` - Build production bundle
+- `pnpm start` - Start production server
+- `pnpm lint` - Run ESLint
 
-Optional (when using Turso/libSQL adapter):
+## Authentication Behavior
 
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
+- In `development`, pages under `/(app)` are accessible even if auth env vars are missing.
+- In `production`, `APP_PASSWORD` and `APP_SESSION_SECRET` are required and users must log in via `/login`.
+- Auth is shared-password based (not multi-user accounts).
 
-Notes:
+## Project Structure
 
-- This is a single shared password, not per-user auth.
-- Do not use `file:./dev.db` in production on Vercel. Use a remote database.
+- `src/app` - App Router pages/layouts
+- `src/components` - UI and feature components
+- `src/actions` - Server Actions for course/grade/note mutations
+- `src/lib` - DB client, queries, auth, validations, utilities
+- `prisma` - Prisma schema, migrations, and seed script
+- `data/courses.json` - Seed source data
+
+## Deployment Notes
+
+- For production, use a remote database (`DATABASE_URL`) instead of local `file:./dev.db`.
+- If using Turso, set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`.
+- Set `APP_PASSWORD` and a strong `APP_SESSION_SECRET`.
